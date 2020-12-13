@@ -1,12 +1,25 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ProductsController } from './products/products.controller';
-import { ProductService } from './products/products.service';
+import { ProductsModule } from './products/products.module';
 
 @Module({
-  imports: [],
-  controllers: [AppController, ProductsController],
-  providers: [AppService, ProductService],
+  imports: [
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule.forRoot({ envFilePath: '.env' })],
+      useFactory: async (configService: ConfigService) => {
+        console.log(configService.get('MONGO'))
+        return {
+          uri: configService.get('MONGO'),
+        };
+      },
+      inject: [ConfigService],
+    }),
+    ProductsModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
