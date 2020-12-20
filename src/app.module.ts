@@ -6,13 +6,14 @@ import { AppService } from './app.service';
 import { ProductsModule } from './products/products.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { AuthService } from './auth/auth.service';
 
 @Module({
   imports: [
     MongooseModule.forRootAsync({
       imports: [ConfigModule.forRoot({ envFilePath: '.env' })],
       useFactory: async (configService: ConfigService) => {
-        console.log(configService.get('MONGO'))
+        console.log(configService.get('MONGO'));
         return {
           uri: configService.get('MONGO'),
         };
