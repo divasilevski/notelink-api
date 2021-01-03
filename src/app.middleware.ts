@@ -11,7 +11,7 @@ export class AppMiddleware implements NestMiddleware {
       res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
       res.header(
         'Access-Control-Allow-Headers',
-        'Origin, X-Requested-With, Content-Type, Accept',
+        'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With',
       );
 
       res.header('Content-Type', 'application/json');
