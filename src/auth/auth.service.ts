@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
@@ -11,7 +12,8 @@ export class AuthService {
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findByUsername(username);
-    if (user && user.password === pass) {
+    const match = bcrypt.compare(pass, user.password);
+    if (user && match) {
       const { password, ...result } = user;
       return result;
     }
@@ -28,28 +30,22 @@ export class AuthService {
   async register(user: any) {
     const find = await this.usersService.findByUsername(user.username);
     if (!find) {
-      const created = await this.usersService.create(
-        user.username,
-        user.password,
-      );
-      return created;
+      const hash = await bcrypt.hash(user.password, 10);
+      return this.usersService.create(user.username, hash);
     } else {
-      return {
-        status: 400,
-        message: 'Пользователь с таким username уже существует',
-      };
+      return new ConflictException();
     }
   }
 }
 
 /** TO DO:
- * 1. Регистрация
- * 2. Вывод всех пользователей
- * 3. Вывод пользователей по id
- * 4. Поиск пользователей
- * 5. Проверка жизни аксесс токена
+ * 1. Регистрация +
+ * 2. Вывод всех пользователей +
+ * 3. Вывод пользователей по id +
+ * 4. Апдейт пользователя +
+ * 5. Изменить жизнь аксесс токена
  * 6. Попробовать залить на Glitch и протестить там рботу
- * 7. Закодировать пароли пользователей
+ * 7. Закодировать пароли пользователей +
  * 8. Валидация и обработка ошибок (проверка на уникальность пользователя)
  * 9. Залить пользователей в базу данных
  * 10. Разделение ролей обычный пользователь и премиум пользователь

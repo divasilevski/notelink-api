@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 export interface User {
   id: string;
@@ -47,26 +51,37 @@ export class UsersService {
     return user;
   }
 
-  async update(id, payload): Promise<User | undefined> {
-    const index = this.users.findIndex((user) => user.id === id);
-    if (index !== -1) {
-      this.users[index] = { id, ...payload };
-    }
-    return this.users[index];
-  }
-
+  // users.controller
   async getAll() {
     return this.users.map((user) => ({
       id: user.id,
       username: user.username,
+      password: user.password,
     }));
   }
 
   async getById(id: string) {
     const user = await this.findById(id);
+    if (!user) return new NotFoundException();
     return {
       id: user.id,
       username: user.username,
     };
+  }
+
+  async update(id, payload) {
+    const index = this.users.findIndex((user) => user.id === id);
+
+    for (const key of Object.keys(payload)) {
+      if (key === 'username') {
+        const user = await this.findByUsername(payload.username);
+        if (!user) this.users[index].username = payload.username;
+        else return new ConflictException();
+      } else if (key === 'password') {
+        this.users[index].password = payload.password;
+      }
+    }
+
+    return this.users[index];
   }
 }
